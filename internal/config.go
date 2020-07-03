@@ -1,36 +1,66 @@
 package internal
 
 import (
-	util "github.com/Floor-Gang/utilpkg"
+	"io/ioutil"
 	"log"
-	"strings"
+	"os"
+
+	"github.com/go-yaml/yaml"
 )
 
+// Config structure.
 type Config struct {
-	Token               string   `yaml:"token"`
-	Prefix              string   `yaml:"prefix"`
-	NotificationChannel string   `yaml:"channel"`
-	Roles               []string `yaml:"roles"`
-	Auth                string   `yaml:"auth_server"`
-	Guild               string   `yaml:"guild"`
+	Token     string `yaml:"token"`
+	Prefix    string `yaml:"prefix"`
+	ChannelID string `yaml:"channel"`
+	LeadDevID string `yaml:"leadev"`
+	AdminID   string `yaml:"admin"`
 }
 
-// This will get the current configuration file. If it doesn't exist then a
-// new one will be made.
-func GetConfig(location string) (config Config) {
-	config = Config{
-		Token:               "",
-		Prefix:              ".subwatch",
-		NotificationChannel: "",
-		Roles:               []string{"1", "2", "3", "4"},
-		Auth:                "",
-		Guild:               "",
+// GetConfig retrieves a configuration.
+func GetConfig(configPath string) Config {
+	if _, err := os.Stat(configPath); err != nil {
+		genConfig(configPath)
+		panic("Please populate the new config file.")
 	}
-	err := util.GetConfig(location, &config)
 
-	if err != nil && strings.Contains(err.Error(), "default configuration") {
-		log.Fatalln("A default configuration has been made.")
+	file, err := ioutil.ReadFile(configPath)
+
+	if err != nil {
+		genConfig(configPath)
+		log.Fatalln("Failed to read configuration file. " + err.Error())
+	}
+
+	config := Config{}
+
+	if err = yaml.Unmarshal(file, &config); err != nil {
+		log.Fatalln("Failed to parse configuration file. " + err.Error())
 	}
 
 	return config
+}
+
+// Generate a configuration.
+func genConfig(configPath string) {
+	config := Config{
+		Token:     "",
+		Prefix:    ".mention",
+		ChannelID: "",
+		LeadDevID: "",
+		AdminID:   "",
+	}
+
+	if _, err := os.Create(configPath); err != nil {
+		log.Fatalln("Failed to create configuration file. " + err.Error())
+	}
+
+	serialized, err := yaml.Marshal(config)
+
+	if err != nil {
+		log.Fatalln("Failed to serialize config. " + err.Error())
+	}
+
+	if err = ioutil.WriteFile(configPath, serialized, 0660); err != nil {
+		log.Fatalln("Failed to write to configuration file. " + err.Error())
+	}
 }

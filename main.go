@@ -1,17 +1,29 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/Floor-Gang/prevent-link-redirection/internal"
-	util "github.com/Floor-Gang/utilpkg"
 )
 
 const (
-	configLocation = "config.yml"
+	configPath = "./config.yml"
 )
 
 func main() {
-	config := internal.GetConfig(configLocation)
-	internal.Start(config, configLocation)
+	err := internal.Start(configPath)
 
-	util.KeepAlive()
+	if err != nil {
+		panic(err)
+	}
+
+	keepalive()
+}
+
+func keepalive() {
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	<-sc
 }

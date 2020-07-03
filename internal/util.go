@@ -1,22 +1,20 @@
 package internal
 
-func hasRole(target string, list []string) bool {
+import (
+	"log"
+)
+
+// Report reports errors
+func Report(err error) {
+	log.Printf("An error occurred %s\n", err)
+}
+
+// StringInSlice checks if a string is present in a slice of strings
+func StringInSlice(a string, list []string) bool {
 	for _, b := range list {
-		if b == target {
+		if b == a {
 			return true
 		}
 	}
 	return false
-}
-
-func removeFromSlice(removeString string, list []string) []string {
-	indexItem := 0
-
-	for index, item := range list {
-		if item == removeString {
-			indexItem = index
-		}
-	}
-
-	return append(list[:indexItem], list[indexItem+1:]...)
 }
