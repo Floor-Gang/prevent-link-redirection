@@ -1,6 +1,7 @@
-package internal
+package discord
 
 import (
+	"github.com/Floor-Gang/prevent-link-redirection/internal"
 	dg "github.com/bwmarrin/discordgo"
 )
 
@@ -8,13 +9,13 @@ import (
 type Bot struct {
 	version string
 	session *dg.Session
-	config  Config
+	config  internal.Config
 }
 
 // Start starts discord client, configuration and database
 func Start(configPath string) error {
 	var err error
-	botConfig := GetConfig(configPath)
+	botConfig := internal.GetConfig(configPath)
 
 	client, err := dg.New("Bot " + botConfig.Token)
 

@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Floor-Gang/prevent-link-redirection/internal"
+	"github.com/Floor-Gang/prevent-link-redirection/internal/discord"
 )
 
 const (
@@ -13,7 +13,7 @@ const (
 )
 
 func main() {
-	err := internal.Start(configPath)
+	err := discord.Start(configPath)
 
 	if err != nil {
 		panic(err)
