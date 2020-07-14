@@ -2,38 +2,63 @@ package discord
 
 import (
 	"github.com/Floor-Gang/prevent-link-redirection/internal"
-	dg "github.com/bwmarrin/discordgo"
+	"log"
+
+	auth "github.com/Floor-Gang/authclient"
+	"github.com/bwmarrin/discordgo"
 )
 
 // Bot structure
 type Bot struct {
-	version string
-	session *dg.Session
-	config  internal.Config
+	config  Config
+	client  *discordgo.Session
+	confLoc string
+	auth    auth.AuthClient
 }
 
 // Start starts discord client, configuration and database
-func Start(configPath string) error {
-	var err error
-	botConfig := internal.GetConfig(configPath)
+func Start(config Config, configLocation string) {
 
-	client, err := dg.New("Bot " + botConfig.Token)
+	// Setup Authentication client
+	authClient, err := auth.GetClient(config.Auth)
 
 	if err != nil {
-		panic(err)
+		log.Fatalln("Failed to connect to authentication server because \n" + err.Error())
 	}
 
+	register, err := authClient.Register(
+		auth.Feature{
+			Name:          "PrevetLinkRedirection",
+			Description:   "This is responsible preventing links to include redirection",
+			Commands:      []auth.SubCommand{}, //TODO add commands if necessary
+			CommandPrefix: config.Prefix,
+		},
+	)
+
+	if err != nil {
+		log.Fatalln("Failed to register with the authenticaiton server\n" + err.Error())
+	}
+
+	// Setup Discord
+	client, _ := discordgo.New(register.Token)
+
+	intents := discordgo.MakeIntent(discordgo.IntentsGuildMessages)
+	client.Identify.Intents = intents
+
 	bot := Bot{
-		session: client,
 		config:  botConfig,
+		client:  client,
+		confLoc: configPath,
+		auth:    authClient,
 	}
 
 	client.AddHandler(bot.onReady)
 	client.AddHandler(bot.onMessage)
 
 	if err = client.Open(); err != nil {
-		panic(err)
+		log.Fatalln(
+			"Failed to connect to Discord, was an access token provided?\n" +
+				err.Error(),
+		)
 	}
-
-	return err
 }

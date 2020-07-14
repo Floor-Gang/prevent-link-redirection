@@ -10,14 +10,14 @@ import (
 )
 
 func (b *Bot) onMessage(s *dg.Session, m *dg.MessageCreate) {
-	if m.Author.ID == s.State.User.ID {
+	if m.Author.Bot {
 		return
 	}
 	// If the message is "ping" reply with "Pong!"
 	if m.ChannelID != b.config.ChannelID {
 		// Check if the message is a URL
-		// TODO: add support for <https://URL>
-		match, _ := regexp.MatchString("^(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$", m.Content)
+		URLRegex := "(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?"
+		match, _ := regexp.MatchString(URLRegex, m.Content)
 		if match {
 			// Send GET request to the URL
 			resp, err := http.Get(m.Content)
@@ -40,5 +40,5 @@ func (b *Bot) onMessage(s *dg.Session, m *dg.MessageCreate) {
 }
 
 func (b *Bot) onReady(s *dg.Session, _ *dg.Ready) {
-	log.Printf("Ready as %s (version %s)\n", s.State.User.Username, b.version)
+	log.Printf("Ready as %s (version %s)\n", s.State.User.Username)
 }

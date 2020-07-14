@@ -3,64 +3,50 @@ package internal
 import (
 	"io/ioutil"
 	"log"
-	"os"
+	"strings"
 
+	util "github.com/Floor-Gang/utilpkg"
 	"github.com/go-yaml/yaml"
 )
 
 // Config structure.
 type Config struct {
-	Token     string `yaml:"token"`
-	Prefix    string `yaml:"prefix"`
-	ChannelID string `yaml:"channel"`
-	LeadDevID string `yaml:"leadev"`
-	AdminID   string `yaml:"admin"`
+	Token  string   `yaml:"token"`
+	Prefix string   `yaml:"prefix"`
+	Roles  []string `yaml:"roles"`
+	Port   int      `yaml:"port"`
+	Guild  string   `yaml:"guild"`
 }
 
-// GetConfig retrieves a configuration.
-func GetConfig(configPath string) Config {
-	if _, err := os.Stat(configPath); err != nil {
-		genConfig(configPath)
-		panic("Please populate the new config file.")
+// GetConfig retrieves config as Config from path.
+func GetConfig(path string) (config Config) {
+	config = Config{
+		Token:  "",
+		Prefix: ".admin",
+		Roles:  []string{"1", "2", "3"},
+		Port:   6969,
+		Guild:  "",
 	}
 
-	file, err := ioutil.ReadFile(configPath)
+	err := util.GetConfig(path, &config)
 
 	if err != nil {
-		genConfig(configPath)
-		log.Fatalln("Failed to read configuration file. " + err.Error())
-	}
-
-	config := Config{}
-
-	if err = yaml.Unmarshal(file, &config); err != nil {
-		log.Fatalln("Failed to parse configuration file. " + err.Error())
+		if strings.Contains(err.Error(), "default") {
+			log.Fatalln("A default configuration has been created")
+		} else {
+			panic(err)
+		}
 	}
 
 	return config
 }
 
-// Generate a configuration.
-func genConfig(configPath string) {
-	config := Config{
-		Token:     "",
-		Prefix:    ".mention",
-		ChannelID: "",
-		LeadDevID: "",
-		AdminID:   "",
-	}
-
-	if _, err := os.Create(configPath); err != nil {
-		log.Fatalln("Failed to create configuration file. " + err.Error())
-	}
-
-	serialized, err := yaml.Marshal(config)
+func save(config Config, path string) error {
+	serialized, _ := yaml.Marshal(&config)
+	err := ioutil.WriteFile(path, serialized, 0660)
 
 	if err != nil {
-		log.Fatalln("Failed to serialize config. " + err.Error())
+		util.Report("Failed to save configuration", err)
 	}
-
-	if err = ioutil.WriteFile(configPath, serialized, 0660); err != nil {
-		log.Fatalln("Failed to write to configuration file. " + err.Error())
-	}
+	return err
 }
