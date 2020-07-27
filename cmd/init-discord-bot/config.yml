@@ -1,0 +1,2 @@
+auth_server: "127.0.0.1:6969"
+prefix: .stop_redirect
