@@ -7,8 +7,9 @@ import (
 
 // Config structure.
 type Config struct {
-	Auth   string `yaml:"auth_server"`
-	Prefix string `yaml:"prefix"`
+	Auth                string        `yaml:"auth_server"` // authserver ip and port
+	Prefix              string        `yaml:"prefix"`      // prefix associated with this bot
+	NotificationChannel string        `yaml:"channel"`     // channel to report to
 }
 
 const configPath = "./config.yml"
@@ -16,7 +17,9 @@ const configPath = "./config.yml"
 // GetConfig retrieves a configuration.
 func GetConfig() Config {
 	config := Config{
-		Prefix: ".ping",
+		Auth:                "",
+		Prefix:              ".stop_redirect",
+		NotificationChannel: "",
 	}
 	err := utilConfig.GetConfig(configPath, &config)
 

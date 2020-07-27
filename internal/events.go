@@ -4,13 +4,31 @@ import (
 	util "github.com/Floor-Gang/utilpkg/botutil"
 	dg "github.com/bwmarrin/discordgo"
 	"log"
+	"net/http"
+	"regexp"
 	"strings"
 )
 
-func (bot *Bot) onMessage(_ *dg.Session, msg *dg.MessageCreate) {
+func (bot *Bot) onMessage(session *dg.Session, msg *dg.MessageCreate) {
 	// check if they provided a prefix and they're not a bot
 	if msg.Author.Bot || !strings.HasPrefix(msg.Content, bot.Config.Prefix) {
-		return
+		// Check if the message is a URL
+		URLRegex := regexp.MustCompile("(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?")
+		match := URLRegex.FindStringSubmatch(msg.Content)
+		if len(match)>0 {
+			// Send GET request to the URL
+			resp, err := http.Get(match[0])
+			if err != nil {
+				log.Fatalf("http.Get => %v", err.Error())
+			}
+			finalURL := resp.Request.URL.String()
+
+			// Check if the response URL is the same as request url
+			if finalURL != msg.Content || strings.Contains(msg.Content, "redirect") {
+				msgAuthor:= msg.Author.ID
+				util.Mention(session, msgAuthor, bot.Config.NotificationChannel, msg.Content+" is redirecting to: "+finalURL)
+			}
+		}
 	}
 
 	// we can ask the authentication server if they're an admin of the bot
@@ -27,10 +45,7 @@ func (bot *Bot) onMessage(_ *dg.Session, msg *dg.MessageCreate) {
 
 	// we can now find out what command they were calling
 	switch args[1] {
-	case "ping":
-		bot.cmdPing(msg.Message)
-		break
-	case "some-admin-command":
+	case "help":
 		// if all your commands are admin-relate then just wrap the whole switch statement
 		// with this if statement
 
@@ -39,7 +54,7 @@ func (bot *Bot) onMessage(_ *dg.Session, msg *dg.MessageCreate) {
 		if err != nil {
 			util.Reply(bot.Client, msg.Message, "Failed to contact auth server")
 		} else if isAdmin {
-			bot.cmdSomethingAdmin(msg.Message)
+			bot.helpMessage(msg.Message)
 		} else {
 			util.Reply(bot.Client, msg.Message, "You must be an admin to run this command.")
 		}

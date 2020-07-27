@@ -32,12 +32,12 @@ func Start() {
 
 	register, err := authClient.Register(
 		auth.Feature{
-			Name:        "", // Give this bot / feature a name
-			Description: "", // Describe what this bot is doing
+			Name:        "Stop Redirect", // Give this bot / feature a name
+			Description: "Looks for links to check if they are redirecting to another web site.", // Describe what this bot is doing
 			Commands: []auth.SubCommand{ // list all the commands this bot / feature has
 				{
-					Name:        "",           // Command name like "add"
-					Description: "",           // Describe what the command does
+					Name:        "help",           // Command name like "add"
+					Description: "This command describes what the bot does.",           // Describe what the command does
 					Example:     []string{""}, // [command name, argument 1, argument 2] like [add, #channel, #channel]
 				},
 			},
