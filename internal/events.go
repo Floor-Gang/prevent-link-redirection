@@ -10,24 +10,29 @@ import (
 )
 
 func (bot *Bot) onMessage(session *dg.Session, msg *dg.MessageCreate) {
+	if msg.Author.Bot { return; }
 	// check if they provided a prefix and they're not a bot
 	if msg.Author.Bot || !strings.HasPrefix(msg.Content, bot.Config.Prefix) {
 		// Check if the message is a URL
 		URLRegex := regexp.MustCompile("(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?")
 		match := URLRegex.FindStringSubmatch(msg.Content)
-		if len(match)>0 {
+		if len(match)>0 && (strings.HasPrefix(match[0], "http://") || strings.HasPrefix(match[0], "https://")) {
 			// Send GET request to the URL
 			resp, err := http.Get(match[0])
 			if err != nil {
 				log.Fatalf("http.Get => %v", err.Error())
 			}
 			finalURL := resp.Request.URL.String()
-
+			msgAuthor:= msg.Author.ID
+			botMessage := ""
+			// Check if URL has "redirect" in it
+			if strings.Contains(match[0], "redirect") {
+				botMessage = "sent this <" + match[0] + "> which contains redirect";
 			// Check if the response URL is the same as request url
-			if finalURL != msg.Content || strings.Contains(msg.Content, "redirect") {
-				msgAuthor:= msg.Author.ID
-				util.Mention(session, msgAuthor, bot.Config.NotificationChannel, msg.Content+" is redirecting to: "+finalURL)
-			}
+			} else if finalURL != match[0] {
+				botMessage = "sent this <" + match[0] + "> which redirects to <" + finalURL + ">";
+			} 
+			util.Mention(session, msgAuthor, bot.Config.NotificationChannel, botMessage)
 		}
 	}
 

@@ -9,7 +9,7 @@ import (
 type Config struct {
 	Auth                string        `yaml:"auth_server"` // authserver ip and port
 	Prefix              string        `yaml:"prefix"`      // prefix associated with this bot
-	NotificationChannel string        `yaml:"channel"`     // channel to report to
+	NotificationChannel string        `yaml:"NotificationChannel"`     // channel to report to
 }
 
 const configPath = "./config.yml"
