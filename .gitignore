@@ -14,3 +14,4 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 cmd/prevent-link-redirection/config.yml
+cmd/prevent-link-redirection/prevent-link-redirection

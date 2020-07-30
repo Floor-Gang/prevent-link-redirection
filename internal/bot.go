@@ -1,10 +1,11 @@
 package internal
 
 import (
+	"log"
+
 	auth "github.com/Floor-Gang/authclient"
 	util "github.com/Floor-Gang/utilpkg"
 	dg "github.com/bwmarrin/discordgo"
-	"log"
 )
 
 // Bot structure
@@ -32,13 +33,13 @@ func Start() {
 
 	register, err := authClient.Register(
 		auth.Feature{
-			Name:        "Stop Redirect", // Give this bot / feature a name
-			Description: "Looks for links to check if they are redirecting to another web site.", // Describe what this bot is doing
-			Commands: []auth.SubCommand{ // list all the commands this bot / feature has
+			Name:        "Stop Redirect",
+			Description: "Looks for links to check if they are redirecting to another web site.",
+			Commands: []auth.SubCommand{
 				{
-					Name:        "help",           // Command name like "add"
-					Description: "This command describes what the bot does.",           // Describe what the command does
-					Example:     []string{""}, // [command name, argument 1, argument 2] like [add, #channel, #channel]
+					Name:        "help",
+					Description: "This command describes what the bot does.",
+					Example:     []string{""},
 				},
 			},
 			CommandPrefix: config.Prefix,
